@@ -22,6 +22,7 @@ class AdaptiveECMP(app_manager.RyuApp):
         self.mac_to_port = {}
         self.monitor_thread = hub.spawn(self._monitor)
 
+    # floods the switch when it is newly added
     @set_ev_cls(ofp_event.EventOFPSwitchFeatures, CONFIG_DISPATCHER)
     def switch_features_handler(self, ev):
         datapath = ev.msg.datapath
@@ -38,6 +39,8 @@ class AdaptiveECMP(app_manager.RyuApp):
 
         self.logger.info("[BOOT] Default FLOOD rule installed on switch %s", datapath.id)
 
+    # uses weighted graph to reconstrct the topology when new switch is added
+    # includes all the links of the newly included switch
     @set_ev_cls(event.EventSwitchEnter)
     def get_topology(self, ev):
         switch_list = get_switch(self, None)
@@ -53,6 +56,7 @@ class AdaptiveECMP(app_manager.RyuApp):
             self.graph.add_edge(src, dst, port=port, weight=1)
             self.logger.info("[TOPO] Link added: %s -> %s via port %s", src, dst, port)
 
+    # moniters the network for every 2 seconds
     def _monitor(self):
         while True:
             for dp in self.datapaths.values():
@@ -120,6 +124,9 @@ class AdaptiveECMP(app_manager.RyuApp):
         if dst_dpid is None:
 
             self.logger.info("[MAC_LOOKUP] Destination MAC %s unknown — flooding", dst_mac)
+            
+            # sending except the from where it came 
+
             actions = [datapath.ofproto_parser.OFPActionOutput(datapath.ofproto.OFPP_FLOOD)]
             out = datapath.ofproto_parser.OFPPacketOut(
                 datapath=datapath,
