@@ -23,15 +23,15 @@ class SpineLeafTopo(Topo):
         h4 = self.addHost('h4', ip='10.0.0.4')
 
         # Connect hosts to leaves
-        self.addLink(h1, leaf1, bw=10)
-        self.addLink(h2, leaf1, bw=10)
-        self.addLink(h3, leaf2, bw=10)
-        self.addLink(h4, leaf2, bw=10)
+        self.addLink(h1, leaf1, bw=3)
+        self.addLink(h2, leaf1, bw=3)
+        self.addLink(h3, leaf2, bw=3)
+        self.addLink(h4, leaf2, bw=3)
 
         # Connect leaves to spines (full mesh)
         for leaf in [leaf1, leaf2]:
-            self.addLink(leaf, spine1, bw=10)
-            self.addLink(leaf, spine2, bw=10)
+            self.addLink(leaf, spine1, bw=3)
+            self.addLink(leaf, spine2, bw=3)
 
 
 if __name__ == '__main__':
@@ -40,13 +40,13 @@ if __name__ == '__main__':
     net = Mininet(topo=topo, controller=RemoteController, link=TCLink)
     net.start()
 
-    print("*** Starting HTTP server on h1")
-    h1 = net.get('h1')
-    h1.cmd('python3 -m http.server 80 &')
+    # print("*** Starting HTTP server on h1")
+    # h1 = net.get('h1')
+    # h1.cmd('python3 -m http.server 80 &')
 
-    print("*** Running iperf server on h4")
-    h4 = net.get('h4')
-    h4.cmd('iperf -s &')
+    # print("*** Running iperf server on h4")
+    # h4 = net.get('h4')
+    # h4.cmd('iperf -s &')
 
     print("*** Testing ping")
     net.pingAll()
